@@ -32,7 +32,6 @@ public class PlayerMovement : MonoBehaviour
                 velocity.y = -2f;
             }
         }
-
         float moveX = Input.GetAxis("Horizontal");
         float moveZ = Input.GetAxis("Vertical");
         Vector3 move = transform.right * moveX + transform.forward * moveZ;
@@ -48,7 +47,7 @@ public class PlayerMovement : MonoBehaviour
 
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity;
-
+        
         transform.Rotate(Vector3.up * mouseX);
         
         rotationX -= mouseY;
