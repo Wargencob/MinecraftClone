@@ -6,4 +6,4 @@ This is a simple minecraft clone written in Unity as an interesting experiment. 
 
 ![Temp](https://github.com/user-attachments/assets/94363aba-4dc1-48e1-ac42-36b0155cda33)
 
-![Temp2](https://github.com/user-attachments/assets/5c61c987-132c-4913-88cc-d8b6d8f609ef)
+![Temp2](https://github.com/user-attachments/assets/900be06a-e5e2-4db1-b70f-86eaab46e3be)
