@@ -53,7 +53,6 @@ public class WorldEditor : MonoBehaviour
 
     private void CreateBlock(Vector3 pos)
     {
-        Debug.Log("Блок установлен в точке: " + pos);
         var obj = Instantiate(prefab, pos, Quaternion.identity);
         obj.transform.localScale = Vector3.one * 50;
     }
