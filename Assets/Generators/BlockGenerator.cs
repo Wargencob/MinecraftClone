@@ -24,6 +24,12 @@ namespace BlockGen
             verticies = new();
             triangles = new();
         }
+
+        public BlockGenerator()
+        {
+            verticies = new();  
+            triangles = new();
+        }
         public void GenerateBlock(int x, int y, int z)
         {
             if (GetPosititon(new Vector3(x, y, z)) == 0)
@@ -58,6 +64,18 @@ namespace BlockGen
             {
                 GenerateFrontSide(new Vector3(x, y, z));
             }
+        }
+
+        public (List<Vector3>, List<int>) AddBlockToChunkMesh(int x, int y, int z)
+        {
+            GenerateLeftSide(new Vector3(x, y, z));
+            GenerateRightSide(new Vector3(x, y, z));
+            GenerateTopSide(new Vector3(x, y, z));
+            GenerateBottomSide(new Vector3(x, y, z));
+            GenerateBackSide(new Vector3(x, y, z));
+            GenerateFrontSide(new Vector3(x, y, z));
+
+            return (verticies, triangles);
         }
 
         public BlockType GetPosititon(Vector3 positon)

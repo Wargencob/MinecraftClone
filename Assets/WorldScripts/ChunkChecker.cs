@@ -30,7 +30,6 @@ class ChunkChecker : MonoBehaviour
            
             if (chunk != currentChunk)
             {
-                Debug.Log($"Id чанка: {chunk.id}, координаты чанка: {chunk.x},{chunk.z}");
                 currentChunk = chunk;
                 return chunk.id;
             }

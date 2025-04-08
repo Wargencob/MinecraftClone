@@ -25,7 +25,7 @@ namespace ChunkGen
                 }
             }
         }
-        public void AcceptMesh(GameObject chunk)
+        public void AcceptMesh(Chunk chunk)
         {
             var chunkMesh = chunk.GetComponent<MeshFilter>().mesh;
 

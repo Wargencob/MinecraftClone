@@ -6,4 +6,6 @@ public class Chunk : MonoBehaviour
     public int id;
     public int x;
     public int z;
+    public new Transform transform;
+    public Mesh chunkMesh;
 }

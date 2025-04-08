@@ -5,11 +5,9 @@ using UnityEngine;
 
 internal class ChunkPlacer : MonoBehaviour
 {
-    public GameObject prefab;
+    public GameObject chunkPrefab;
 
-    private GameObject chunk;
-
-    int a = 1;
+    int a = 0;
 
     private void Start()
     {
@@ -25,13 +23,15 @@ internal class ChunkPlacer : MonoBehaviour
         {
             for (int z = 0; z < 10; z++)
             {
-                chunk = Instantiate(prefab, new Vector3(x*16, 0, z*16), Quaternion.identity, transform);
-                chunk.name = "chunk";
+                var prefab = Instantiate(chunkPrefab, new Vector3(x*16, 0, z*16), Quaternion.identity, transform);
+                prefab.name = "chunk";
 
-                var chunkInfo = chunk.GetComponent<Chunk>();
-                chunkInfo.id = a++;
-                chunkInfo.x = x * 16;
-                chunkInfo.z = z * 16;
+                var chunk = prefab.GetComponent<Chunk>();
+                chunk.id = ++a;
+                chunk.x = x * 16;
+                chunk.z = z * 16;
+                chunk.transform = prefab.transform;
+                chunk.chunkMesh = prefab.GetComponent<MeshFilter>().mesh;
                 
                 chunkGenerator.GenerateChunk(blocks);
 
