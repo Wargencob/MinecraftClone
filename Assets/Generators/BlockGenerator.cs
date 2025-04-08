@@ -15,6 +15,8 @@ namespace BlockGen
         public List<Vector3> verticies;
         public List<int> triangles;
 
+        private int verticiesCount;
+
         BlockType[,,] Blocks;
 
         public BlockGenerator(BlockType[,,] blockTypes)
@@ -25,10 +27,10 @@ namespace BlockGen
             triangles = new();
         }
 
-        public BlockGenerator()
+        public BlockGenerator(List<Vector3> verticies, List<int> triangles)
         {
-            verticies = new();  
-            triangles = new();
+            this.verticies = verticies;
+            this.triangles = triangles;
         }
         public void GenerateBlock(int x, int y, int z)
         {

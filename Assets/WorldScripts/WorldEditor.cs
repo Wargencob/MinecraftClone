@@ -22,7 +22,6 @@ public class WorldEditor : MonoBehaviour
     void Start()
     {
         currentRayLength = maxRayLength;
-        blockGenerator = new();
     }
 
     void Update()
@@ -58,7 +57,9 @@ public class WorldEditor : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
-            CreateBlock(Vector3Int.FloorToInt(hit.point) + (Vector3Int)hit.normal);
+            Vector3 pos = (Vector3)Vector3Int.FloorToInt(hit.point);
+            Debug.Log(pos);
+            CreateBlock(pos);
         }
         if (Input.GetMouseButtonDown(1))
         {
@@ -71,24 +72,20 @@ public class WorldEditor : MonoBehaviour
         throw new NotImplementedException();
     }
 
-    private void CreateBlock(Vector3Int pos)
+    private void CreateBlock(Vector3 pos)
     {
-        //var obj = Instantiate(prefab, pos, Quaternion.identity);
-        //obj.transform.localScale = Vector3.one * 50;
-        var mesh = blockGenerator.AddBlockToChunkMesh(pos.x, pos.y, pos.z);
-        foreach(var verticies in mesh.Item1)
-            Debug.Log(verticies);
-        //var chunkVerticies = chunk.GetComponent<MeshFilter>().mesh.vertices.ToList<Vector3>();
-        //var chunkTriangles = chunk.GetComponent<MeshFilter>().mesh.triangles.ToList<int>();
-        //foreach (var vert in mesh.Item1)
-        //{
-        //    chunkVerticies.Add(vert);
-        //}
-        //chunk.GetComponent<MeshFilter>().mesh.vertices = chunkVerticies.ToArray();
-        //foreach(var triangles in mesh.Item2)
-        //{
-        //    chunkTriangles.Add(triangles);
-        //}
-        //chunk.GetComponent<MeshFilter>().mesh.triangles = mesh.Item2.ToArray();
+        var chunkMesh = chunk.GetComponent<MeshFilter>().mesh;
+        var meshCollider = chunk.GetComponent<MeshCollider>();
+
+        blockGenerator = new(chunkMesh.vertices.ToList<Vector3>(), chunkMesh.triangles.ToList<int>());
+
+        var mesh = blockGenerator.AddBlockToChunkMesh((int)pos.x, (int)pos.y, (int)pos.z);
+
+        chunkMesh.vertices = mesh.Item1.ToArray();
+        chunkMesh.triangles = mesh.Item2.ToArray();
+
+        chunkMesh.RecalculateBounds();
+        chunkMesh.RecalculateNormals();
+        meshCollider.sharedMesh = chunkMesh;
     }
 }
