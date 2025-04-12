@@ -6,157 +6,133 @@ namespace BlockGen
 {
     public class BlockGenerator
     {
-        const int ChunkWidth = 16;
-        const int ChunkDepth = 128;
-        const int ChunkHeight = 16;
-
-        private const float blockScale = 1;
-
-        public List<Vector3> verticies;
-        public List<int> triangles;
-
-        private int verticiesCount;
-
-        BlockType[,,] Blocks;
-
-        public BlockGenerator(BlockType[,,] blockTypes)
+        private BlockType[,,] blocks;
+        public BlockGenerator(BlockType[,,] blocks)
         {
-            Blocks = blockTypes;
-           
-            verticies = new();
-            triangles = new();
+            this.blocks = blocks;
+        }
+        public BlockGenerator()
+        {
+            
         }
 
-        public BlockGenerator(List<Vector3> verticies, List<int> triangles)
+        public Block GenerateOneBlock(int x, int y, int z)
         {
-            this.verticies = verticies;
-            this.triangles = triangles;
-        }
-        public void GenerateBlock(int x, int y, int z)
-        {
-            if (GetPosititon(new Vector3(x, y, z)) == 0)
-                return;
+            Block block = new Block();
 
-            if (GetPosititon(new Vector3(x, y, z) + Vector3.left) == 0)
+            GenerateLeftSide(new Vector3(x, y, z), block);
+            GenerateRightSide(new Vector3(x, y, z), block);
+            GenerateTopSide(new Vector3(x, y, z), block);
+            GenerateBottomSide(new Vector3(x, y, z), block);
+            GenerateBackSide(new Vector3(x, y, z), block);
+            GenerateFrontSide(new Vector3(x, y, z), block);
+
+            return block;
+
+        }
+        public Block GenerateBlocksInChunk(int x, int y, int z)
+        {
+            Block block = new Block();
+
+            if (block.GetPosititon(blocks, new Vector3(x, y, z)) == 0)
+                return null;
+
+            if (block.GetPosititon(blocks, new Vector3(x, y, z) + Vector3.left) == 0)
             {
-                GenerateLeftSide(new Vector3(x, y, z));
+                GenerateLeftSide(new Vector3(x, y, z), block);
             }
 
-            if (GetPosititon(new Vector3(x, y, z) + Vector3.right) == 0)
+            if (block.GetPosititon(blocks, new Vector3(x, y, z) + Vector3.right) == 0)
             {
-                GenerateRightSide(new Vector3(x, y, z));
+                GenerateRightSide(new Vector3(x, y, z), block);
             }
 
-            if (GetPosititon(new Vector3(x, y, z) + Vector3.up) == 0)
+            if (block.GetPosititon(blocks, new Vector3(x, y, z) + Vector3.up) == 0)
             {
-                GenerateTopSide(new Vector3(x, y, z));
+                GenerateTopSide(new Vector3(x, y, z), block);
             }
 
-            if (GetPosititon(new Vector3(x, y, z) + Vector3.down) == 0)
+            if (block.GetPosititon(blocks, new Vector3(x, y, z) + Vector3.down) == 0)
             {
-                GenerateBottomSide(new Vector3(x, y, z));
+                GenerateBottomSide(new Vector3(x, y, z), block);
             }
 
-            if (GetPosititon(new Vector3(x, y, z) + Vector3.back) == 0)
+            if (block.GetPosititon(blocks, new Vector3(x, y, z) + Vector3.back) == 0)
             {
-                GenerateBackSide(new Vector3(x, y, z));
+                GenerateBackSide(new Vector3(x, y, z), block);
             }
 
-            if (GetPosititon(new Vector3(x, y, z) + Vector3.forward) == 0)
+            if (block.GetPosititon(blocks, new Vector3(x, y, z) + Vector3.forward) == 0)
             {
-                GenerateFrontSide(new Vector3(x, y, z));
+                GenerateFrontSide(new Vector3(x, y, z), block);
             }
+
+            return block;
         }
 
-        public (List<Vector3>, List<int>) AddBlockToChunkMesh(int x, int y, int z)
+        private void GenerateFrontSide(Vector3 pos, Block block)
         {
-            GenerateLeftSide(new Vector3(x, y, z));
-            GenerateRightSide(new Vector3(x, y, z));
-            GenerateTopSide(new Vector3(x, y, z));
-            GenerateBottomSide(new Vector3(x, y, z));
-            GenerateBackSide(new Vector3(x, y, z));
-            GenerateFrontSide(new Vector3(x, y, z));
+            block.mesh.vertices.Add((new Vector3(0, 0, 1) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(1, 0, 1) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(0, 1, 1) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(1, 1, 1) + pos) * Block.blockScale);
 
-            return (verticies, triangles);
+            AddVertices(block);
         }
-
-        public BlockType GetPosititon(Vector3 positon)
+        private void GenerateBackSide(Vector3 pos, Block block)
         {
-            if (positon.x >= 0 && positon.x < ChunkWidth &&
-                 positon.y >= 0 && positon.y < ChunkDepth &&
-                 positon.z >= 0 && positon.z < ChunkHeight)
-            {
-                return Blocks[(int)positon.x, (int)positon.y, (int)positon.z];
-            }
-            else
-            {
-                return BlockType.Air;
-            }
+            block.mesh.vertices.Add((new Vector3(0, 0, 0) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(0, 1, 0) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(1, 0, 0) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(1, 1, 0) + pos) * Block.blockScale);
+
+            AddVertices(block);
         }
-
-        private void GenerateFrontSide(Vector3 pos)
+        private void GenerateBottomSide(Vector3 pos, Block block)
         {
-            verticies.Add((new Vector3(0, 0, 1) + pos)*blockScale);
-            verticies.Add((new Vector3(1, 0, 1) + pos)*blockScale);
-            verticies.Add((new Vector3(0, 1, 1) + pos)*blockScale);
-            verticies.Add((new Vector3(1, 1, 1) + pos)*blockScale);
+            block.mesh.vertices.Add((new Vector3(0, 0, 0) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(1, 0, 0) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(0, 0, 1) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(1, 0, 1) + pos) * Block.blockScale);
 
-            AddVerticies();
+            AddVertices(block);
         }
-        private void GenerateBackSide(Vector3 pos)
+        private void GenerateTopSide(Vector3 pos, Block block)
         {
-            verticies.Add((new Vector3(0, 0, 0) + pos)*blockScale);
-            verticies.Add((new Vector3(0, 1, 0) + pos)*blockScale);
-            verticies.Add((new Vector3(1, 0, 0) + pos)*blockScale);
-            verticies.Add((new Vector3(1, 1, 0) + pos)*blockScale);
+            block.mesh.vertices.Add((new Vector3(0, 1, 0) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(0, 1, 1) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(1, 1, 0) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(1, 1, 1) + pos) * Block.blockScale);
 
-            AddVerticies();
+            AddVertices(block);
         }
-        private void GenerateBottomSide(Vector3 pos)
+        private void GenerateRightSide(Vector3 pos, Block block)
         {
-            verticies.Add((new Vector3(0, 0, 0) + pos)*blockScale);
-            verticies.Add((new Vector3(1, 0, 0) + pos)*blockScale);
-            verticies.Add((new Vector3(0, 0, 1) + pos)*blockScale);
-            verticies.Add((new Vector3(1, 0, 1) + pos)*blockScale);
+            block.mesh.vertices.Add((new Vector3(1, 0, 0) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(1, 1, 0) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(1, 0, 1) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(1, 1, 1) + pos) * Block.blockScale);
 
-            AddVerticies();
+            AddVertices(block);
         }
-        private void GenerateTopSide(Vector3 pos)
+        private void GenerateLeftSide(Vector3 pos, Block block)
         {
-            verticies.Add((new Vector3(0, 1, 0) + pos)*blockScale);
-            verticies.Add((new Vector3(0, 1, 1) + pos)*blockScale);
-            verticies.Add((new Vector3(1, 1, 0) + pos)*blockScale);
-            verticies.Add((new Vector3(1, 1, 1) + pos)*blockScale);
+            block.mesh.vertices.Add((new Vector3(0, 0, 0) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(0, 0, 1) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(0, 1, 0) + pos) * Block.blockScale);
+            block.mesh.vertices.Add((new Vector3(0, 1, 1) + pos) * Block.blockScale);
 
-            AddVerticies();
+            AddVertices(block);
         }
-        private void GenerateRightSide(Vector3 pos)
+        private void AddVertices(Block block)
         {
-            verticies.Add((new Vector3(1, 0, 0) + pos)*blockScale);
-            verticies.Add((new Vector3(1, 1, 0) + pos)*blockScale);
-            verticies.Add((new Vector3(1, 0, 1) + pos)*blockScale);
-            verticies.Add((new Vector3(1, 1, 1) + pos)*blockScale);
+            block.mesh.triangles.Add(block.mesh.vertices.Count - 4);
+            block.mesh.triangles.Add(block.mesh.vertices.Count - 3);
+            block.mesh.triangles.Add(block.mesh.vertices.Count - 2);
 
-            AddVerticies();
-        }
-        private void GenerateLeftSide(Vector3 pos)
-        {
-            verticies.Add((new Vector3(0, 0, 0) + pos)*blockScale);
-            verticies.Add((new Vector3(0, 0, 1) + pos)*blockScale);
-            verticies.Add((new Vector3(0, 1, 0) + pos)*blockScale);
-            verticies.Add((new Vector3(0, 1, 1) + pos)*blockScale);
-
-            AddVerticies();
-        }
-        private void AddVerticies()
-        {
-            triangles.Add(verticies.Count - 4);
-            triangles.Add(verticies.Count - 3);
-            triangles.Add(verticies.Count - 2);
-
-            triangles.Add(verticies.Count - 3);
-            triangles.Add(verticies.Count - 1);
-            triangles.Add(verticies.Count - 2);
+            block.mesh.triangles.Add(block.mesh.vertices.Count - 3);
+            block.mesh.triangles.Add(block.mesh.vertices.Count - 1);
+            block.mesh.triangles.Add(block.mesh.vertices.Count - 2);
         }
     }
 }

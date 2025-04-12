@@ -1,43 +1,65 @@
 using BlockGen;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace ChunkGen
 {
     public class ChunkGenerator
     {
-        const int ChunkWidth = 16;
-        const int ChunkDepth = 128;
-        const int ChunkHeight = 16;
-
         private BlockGenerator blockGenerator;
-        public void GenerateChunk(BlockType[,,] blocks)
+        public Chunk GenerateChunk(BlockType[,,] blocks, Chunk chunk)
         {
-            blockGenerator = new(blocks);
+            blockGenerator = new BlockGenerator(blocks);
 
-            for (int x = 0 ; x < ChunkWidth; x++)
+            for (int x = 0 ; x < Chunk.chunkWidth; x++)
             {
-                for (int y = 0; y < ChunkDepth; y++)
+                for (int y = 0; y < Chunk.chunkDepth; y++)
                 {
-                    for (int z = 0; z < ChunkHeight; z++)
+                    for (int z = 0; z < Chunk.chunkHeight; z++)
                     {
-                        blockGenerator.GenerateBlock(x, y, z);
+                        Block block = blockGenerator.GenerateBlocksInChunk(x, y, z);
+                        if (block != null)
+                        {
+                            chunk.mesh.meshBlocks.Add(block);
+                        }
                     }
                 }
             }
+            
+            AcceptMesh(chunk);
+            return chunk;
         }
-        public void AcceptMesh(Chunk chunk)
+        public static Chunk AcceptMesh(Chunk chunk)
         {
-            var chunkMesh = chunk.GetComponent<MeshFilter>().mesh;
+            var Mesh = chunk.GetComponent<MeshFilter>().mesh;
+            var Colider = chunk.GetComponent<MeshCollider>();
 
-            chunkMesh.vertices = blockGenerator.verticies.ToArray();
-            chunkMesh.triangles = blockGenerator.triangles.ToArray();
+            var verticesList = Mesh.vertices.ToList<Vector3>();
+            var trianglesList = Mesh.triangles.ToList<int>();
 
-            chunkMesh.RecalculateBounds();
-            chunkMesh.RecalculateNormals();
-            chunkMesh.Optimize();
-                
-            chunk.GetComponent<MeshFilter>().mesh = chunkMesh;
-            chunk.GetComponent<MeshCollider>().sharedMesh = chunkMesh;
+            foreach(var block in chunk.mesh.meshBlocks)
+            {
+                int vertexOffset = verticesList.Count;
+
+                verticesList.AddRange(block.mesh.vertices);
+
+                foreach (int index in block.mesh.triangles)
+                {
+                    trianglesList.Add(index + vertexOffset);
+                }
+            }
+
+            Mesh.vertices = verticesList.ToArray();
+            Mesh.triangles = trianglesList.ToArray();
+
+            Colider.sharedMesh = Mesh;
+
+            Mesh.RecalculateBounds();
+            Mesh.RecalculateNormals();
+            Mesh.Optimize();
+
+            return chunk;
         }
     }
 }

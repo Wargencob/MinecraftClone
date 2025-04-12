@@ -3,13 +3,13 @@ using System;
 using System.Linq;
 using Unity.VisualScripting;
 using UnityEngine;
+using static UnityEditor.PlayerSettings;
 
 public class WorldEditor : MonoBehaviour
 {
-    public Transform CameraTransform;
-    public GameObject prefab;
-    private BlockGenerator blockGenerator;
+    [SerializeField] private Transform CameraTransform;
     private Chunk chunk;
+    private ChunkReMasher chunkReMasher;
 
     private Ray ray;
     private RaycastHit hit;
@@ -22,6 +22,7 @@ public class WorldEditor : MonoBehaviour
     void Start()
     {
         currentRayLength = maxRayLength;
+        chunkReMasher = new();
     }
 
     void Update()
@@ -42,7 +43,6 @@ public class WorldEditor : MonoBehaviour
         if (Physics.Raycast(ray, out hit, maxRayLength))
         {
             currentRayLength = hit.distance;
-            chunk = hit.collider.GetComponent<Chunk>();
             InputLogic();
         }
         else
@@ -55,21 +55,39 @@ public class WorldEditor : MonoBehaviour
 
     private void InputLogic()
     {
+        chunk = hit.collider.GetComponent<Chunk>();
+
         if (Input.GetMouseButtonDown(0))
         {
-            Vector3 pos = (Vector3)Vector3Int.FloorToInt(hit.point);
-            Debug.Log(pos);
-            CreateBlock(pos);
+            if (hit.normal.x + hit.normal.y + hit.normal.z > 0)
+            {
+                CreateBlock(hit.point);
+            }
+            else
+            {
+                CreateBlock(hit.point + hit.normal);
+            }
         }
         if (Input.GetMouseButtonDown(1))
         {
-            DeleteBlock();
+            DeleteBlock(hit.point);
         }
     }
 
-    private void DeleteBlock()
+    private void DeleteBlock(Vector3 pos)
     {
-        throw new NotImplementedException();
+        var chunkMesh = chunk.GetComponent<MeshFilter>().mesh;
+        var meshCollider = chunk.GetComponent<MeshCollider>();
+        ChunkReMasher chunkReMasher = new();
+
+        Vector3 localPos = chunk.transform.InverseTransformPoint(pos);
+        chunkMesh = chunkReMasher.RemoveBlockFromTheMesh(chunkMesh, 
+            (int)localPos.x, (int)localPos.y, (int)localPos.z, 
+            Vector3Int.FloorToInt(pos), hit.triangleIndex);
+
+        chunkMesh.RecalculateBounds();
+        chunkMesh.RecalculateNormals();
+        meshCollider.sharedMesh = chunkMesh;
     }
 
     private void CreateBlock(Vector3 pos)
@@ -77,12 +95,8 @@ public class WorldEditor : MonoBehaviour
         var chunkMesh = chunk.GetComponent<MeshFilter>().mesh;
         var meshCollider = chunk.GetComponent<MeshCollider>();
 
-        blockGenerator = new(chunkMesh.vertices.ToList<Vector3>(), chunkMesh.triangles.ToList<int>());
-
-        var mesh = blockGenerator.AddBlockToChunkMesh((int)pos.x, (int)pos.y, (int)pos.z);
-
-        chunkMesh.vertices = mesh.Item1.ToArray();
-        chunkMesh.triangles = mesh.Item2.ToArray();
+        Vector3 localPos = chunk.transform.InverseTransformPoint(pos);
+        chunkMesh = chunkReMasher.AddBlockToChunkMesh(chunkMesh, (int)localPos.x, (int)localPos.y, (int)localPos.z);
 
         chunkMesh.RecalculateBounds();
         chunkMesh.RecalculateNormals();
