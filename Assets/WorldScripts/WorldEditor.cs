@@ -1,28 +1,19 @@
 using BlockGen;
-using System;
-using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEditor.PlayerSettings;
 
 public class WorldEditor : MonoBehaviour
 {
-    [SerializeField] private Transform CameraTransform;
-    private Chunk chunk;
+    [SerializeField] private Transform cameraTransform;
+    [SerializeField] private float maxRayLength = 10f;
+    [SerializeField] private float returnSpeed = 1f;
+
     private ChunkReMasher chunkReMasher;
-
-    private Ray ray;
-    private RaycastHit hit;
-
-    public float maxRayLength = 10f;
-    public float returnSpeed = 1f;
-
     private float currentRayLength;
 
     void Start()
     {
         currentRayLength = maxRayLength;
-        chunkReMasher = new();
+        chunkReMasher = new ChunkReMasher();
     }
 
     void Update()
@@ -32,74 +23,42 @@ public class WorldEditor : MonoBehaviour
 
     private void ProcessRay()
     {
-        ray = new Ray(CameraTransform.position, CameraTransform.forward);
-        hit = RayLogic();
-
-        Debug.DrawRay(ray.origin, ray.direction * currentRayLength, Color.red);
-    }
-
-    private RaycastHit RayLogic()
-    {
-        if (Physics.Raycast(ray, out hit, maxRayLength))
+        var ray = new Ray(cameraTransform.position, cameraTransform.forward);
+        if (Physics.Raycast(ray, out RaycastHit hit, maxRayLength))
         {
             currentRayLength = hit.distance;
-            InputLogic();
+            Debug.DrawRay(ray.origin, ray.direction * currentRayLength, Color.red);
+            HandleInput(hit);
         }
         else
         {
             currentRayLength = Mathf.Lerp(currentRayLength, maxRayLength, Time.deltaTime * returnSpeed);
+            Debug.DrawRay(ray.origin, ray.direction * currentRayLength, Color.gray);
         }
-
-        return hit;
     }
 
-    private void InputLogic()
+    private void HandleInput(RaycastHit hit)
     {
-        chunk = hit.collider.GetComponent<Chunk>();
-
         if (Input.GetMouseButtonDown(0))
         {
-            if (hit.normal.x + hit.normal.y + hit.normal.z > 0)
-            {
-                CreateBlock(hit.point);
-            }
-            else
-            {
-                CreateBlock(hit.point + hit.normal);
-            }
+            UpdateBlockMesh(hit, true);
         }
-        if (Input.GetMouseButtonDown(1))
+        else if (Input.GetMouseButtonDown(1))
         {
-            DeleteBlock(hit.point);
+            UpdateBlockMesh(hit, false);
         }
     }
 
-    private void DeleteBlock(Vector3 pos)
+    private void UpdateBlockMesh(RaycastHit hit, bool isAdding)
     {
-        var chunkMesh = chunk.GetComponent<MeshFilter>().mesh;
-        var meshCollider = chunk.GetComponent<MeshCollider>();
-        ChunkReMasher chunkReMasher = new();
+        Mesh updatedMesh = isAdding
+            ? chunkReMasher.AddBlockToChunkMeshByHit(hit)
+            : chunkReMasher.RemoveBlockFromTheMeshByHit(hit);
 
-        Vector3 localPos = chunk.transform.InverseTransformPoint(pos);
-        chunkMesh = chunkReMasher.RemoveBlockFromTheMesh(chunkMesh, 
-            (int)localPos.x, (int)localPos.y, (int)localPos.z, 
-            Vector3Int.FloorToInt(pos), hit.triangleIndex);
+        var meshFilter = hit.collider.GetComponent<MeshFilter>();
+        var meshCollider = hit.collider.GetComponent<MeshCollider>();
 
-        chunkMesh.RecalculateBounds();
-        chunkMesh.RecalculateNormals();
-        meshCollider.sharedMesh = chunkMesh;
-    }
-
-    private void CreateBlock(Vector3 pos)
-    {
-        var chunkMesh = chunk.GetComponent<MeshFilter>().mesh;
-        var meshCollider = chunk.GetComponent<MeshCollider>();
-
-        Vector3 localPos = chunk.transform.InverseTransformPoint(pos);
-        chunkMesh = chunkReMasher.AddBlockToChunkMesh(chunkMesh, (int)localPos.x, (int)localPos.y, (int)localPos.z);
-
-        chunkMesh.RecalculateBounds();
-        chunkMesh.RecalculateNormals();
-        meshCollider.sharedMesh = chunkMesh;
+        meshFilter.mesh = updatedMesh;
+        meshCollider.sharedMesh = updatedMesh;
     }
 }

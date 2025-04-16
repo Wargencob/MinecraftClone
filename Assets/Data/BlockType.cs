@@ -1,5 +1,6 @@
-﻿public enum BlockType : byte
+﻿public enum BlockType
 {
     Air = 0,
-    Dirt = 1
+    Dirt = 1,
+    Grass = 2
 }

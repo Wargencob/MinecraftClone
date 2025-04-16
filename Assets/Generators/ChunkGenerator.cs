@@ -19,9 +19,14 @@ namespace ChunkGen
                     for (int z = 0; z < Chunk.chunkHeight; z++)
                     {
                         Block block = blockGenerator.GenerateBlocksInChunk(x, y, z);
+                        
                         if (block != null)
                         {
                             chunk.mesh.meshBlocks.Add(block);
+                            
+                            block.blockPosition = new Vector3(x, y, z);
+
+                            block.blockCenter = (new Vector3(x, y, z) + new Vector3(x + 1, y + 1, z + 1))/2;
                         }
                     }
                 }
@@ -38,9 +43,13 @@ namespace ChunkGen
             var verticesList = Mesh.vertices.ToList<Vector3>();
             var trianglesList = Mesh.triangles.ToList<int>();
 
-            foreach(var block in chunk.mesh.meshBlocks)
+            chunk.blockUVSList.Clear();
+
+            foreach (var block in chunk.mesh.meshBlocks)
             {
                 int vertexOffset = verticesList.Count;
+
+                chunk.blockUVSList.AddRange(block.uvs);
 
                 verticesList.AddRange(block.mesh.vertices);
 
@@ -50,14 +59,21 @@ namespace ChunkGen
                 }
             }
 
+            Vector2[] uvs = chunk.blockUVSList.ToArray();
+
+            Mesh.Clear();
+
             Mesh.vertices = verticesList.ToArray();
             Mesh.triangles = trianglesList.ToArray();
+            Mesh.uv = uvs;
 
             Colider.sharedMesh = Mesh;
 
             Mesh.RecalculateBounds();
             Mesh.RecalculateNormals();
             Mesh.Optimize();
+
+            Mesh.uv = chunk.blockUVSList.ToArray();
 
             return chunk;
         }

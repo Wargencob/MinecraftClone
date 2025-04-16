@@ -1,3 +1,5 @@
+using NUnit.Framework;
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent (typeof(MeshFilter)), RequireComponent (typeof(MeshRenderer)), RequireComponent (typeof(MeshCollider))]
@@ -11,11 +13,12 @@ public class Chunk : MonoBehaviour
     public int x;
     public int z;
 
-    public ChunkMesh mesh;
+    public List<Vector2> blockUVSList;
 
-    public Mesh chunkMesh;
+    public ChunkMesh mesh;
     public Chunk()
     {
         mesh = new ChunkMesh();
+        blockUVSList = new List<Vector2>();
     }
 }

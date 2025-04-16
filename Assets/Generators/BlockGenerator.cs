@@ -13,7 +13,7 @@ namespace BlockGen
         }
         public BlockGenerator()
         {
-            
+
         }
 
         public Block GenerateOneBlock(int x, int y, int z)
@@ -28,7 +28,6 @@ namespace BlockGen
             GenerateFrontSide(new Vector3(x, y, z), block);
 
             return block;
-
         }
         public Block GenerateBlocksInChunk(int x, int y, int z)
         {
@@ -126,6 +125,12 @@ namespace BlockGen
         }
         private void AddVertices(Block block)
         {
+            block.uvs.Add(new Vector2(0 * 0.5f, 1 * 0.5f));
+            block.uvs.Add(new Vector2(0 * 0.5f, 2 * 0.5f));
+            block.uvs.Add(new Vector2(1 * 0.5f, 1 * 0.5f));  
+            block.uvs.Add(new Vector2(1 * 0.5f, 2 * 0.5f));
+
+
             block.mesh.triangles.Add(block.mesh.vertices.Count - 4);
             block.mesh.triangles.Add(block.mesh.vertices.Count - 3);
             block.mesh.triangles.Add(block.mesh.vertices.Count - 2);

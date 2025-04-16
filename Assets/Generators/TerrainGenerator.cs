@@ -32,6 +32,22 @@ namespace TerrainGen
                     }
                 }
             }
+
+            for (int x = 0; x < ChunkWidth; x ++)
+            {
+                for ( int z = 0; z < ChunkHeight; z ++)
+                {
+                    for (int y = 0; y < ChunkDepth; y ++)
+                    {
+                        if (result[x, y + 1, z] == BlockType.Air)
+                        {
+                            result[x, y, z] = BlockType.Grass;
+                            break;
+                        }
+                    }
+                }
+            }
+
             return result;
         }
     }

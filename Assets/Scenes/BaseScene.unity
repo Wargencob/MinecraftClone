@@ -607,8 +607,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0dd24256999958545ac3e4c242d61860, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  CameraTransform: {fileID: 280500160}
-  prefab: {fileID: 919132149155446097, guid: afe08396011aac24c860a1c2a77e42fd, type: 3}
+  cameraTransform: {fileID: 280500160}
   maxRayLength: 3
   returnSpeed: 5
 --- !u!114 &1630968494
