@@ -1,9 +1,12 @@
-## MinecraftCloneUnity
+# Minecraft Clone in Unity
 Hello! 👋
 This is a simple minecraft clone written in Unity as an interesting experiment. I provide access to the code to everyone who wants it)
-## ScreenShots and GIFs
-![изображение](https://github.com/user-attachments/assets/1275c255-5586-41d0-9db9-1f3983668e54)
 
-![Temp](https://github.com/user-attachments/assets/94363aba-4dc1-48e1-ac42-36b0155cda33)
+![Gameplay]
+![Temp3](https://github.com/user-attachments/assets/b28b77a3-4390-41c9-9760-5508c74fcb5e)
 
-![Temp2](https://github.com/user-attachments/assets/900be06a-e5e2-4db1-b70f-86eaab46e3be)
+## Setup
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/yourusername/minecraft-clone.git
