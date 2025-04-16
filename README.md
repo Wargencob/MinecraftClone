@@ -11,4 +11,4 @@ This is a simple minecraft clone written in Unity as an interesting experiment. 
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/yourusername/minecraft-clone.git
+   git clone https://github.com/Wargencob/MinecraftCloneUnity
