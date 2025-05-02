@@ -1,50 +1,68 @@
 using UnityEngine;
-public class TerrainGenerator : ITerrainGenerator
+
+public class TerrainGenerator
 {
-    readonly int ChunkWidth = Chunk.ChunkWidth;
-    readonly int ChunkHeight = Chunk.ChunkHeight;
-    readonly int ChunkDepth = Chunk.ChunkDepth;
+    private FastNoiseLite heightNoise;
+    private FastNoiseLite mountNoise;
+
+    public float mountFrequency = 0.001f;
+    public float mountAmplitude = 100f;
+    public int mountOctave = 5;
+    public float mountLacunarity = 2f;
+    public float mountGain = 0.38f;
+
+    public float heightFrequency = 0.01f;
+    public float heightAmplitude = 10f;
+    public int seaLevel = 32;
+
+    public TerrainGenerator()
+    {
+        mountNoise = new FastNoiseLite();
+        mountNoise.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2);
+        mountNoise.SetFrequency(mountFrequency);
+        mountNoise.SetFractalType(FastNoiseLite.FractalType.FBm);
+        mountNoise.SetFractalOctaves(mountOctave);
+        mountNoise.SetFractalLacunarity(mountLacunarity);
+        mountNoise.SetFractalGain(mountGain);
+
+        heightNoise = new FastNoiseLite();
+        heightNoise.SetNoiseType(FastNoiseLite.NoiseType.OpenSimplex2);
+        heightNoise.SetSeed(1337); // Заменить на случайный для мира
+        heightNoise.SetFrequency(heightFrequency);
+    }
+
     public BlockType[,,] GenerateTerrain(int chunkX, int chunkZ)
     {
-        var result = new BlockType[ChunkWidth, ChunkDepth, ChunkHeight];
+        const int chunkSize = 16;
+        const int chunkHeight = 128;
 
-        for (int x = 0; x < Chunk.ChunkWidth; x++)
+        BlockType[,,] blocks = new BlockType[chunkSize, chunkHeight, chunkSize];
+
+        for (int x = 0; x < chunkSize; x++)
         {
-            for (int z = 0; z < Chunk.ChunkHeight; z++)
+            for (int z = 0; z < chunkSize; z++)
             {
-                int worldX = chunkX * Chunk.ChunkWidth + x;
-                int worldZ = chunkZ * Chunk.ChunkDepth + z;
+                int worldX = chunkX * chunkSize + x;
+                int worldZ = chunkZ * chunkSize + z;
 
-                float baseHeight = Mathf.PerlinNoise(worldX * 0.05f, worldZ * 0.05f) * 20f;
+                float mountValue = mountNoise.GetNoise(worldX, worldZ);
+                float noiseValue = heightNoise.GetNoise(worldX, worldZ);
+                int height = Mathf.FloorToInt(((noiseValue + 1f) * 0.5f * heightAmplitude) + ((mountValue + 1f) * 0.5f * mountAmplitude) + seaLevel);
 
-                float detailNoise = Mathf.PerlinNoise(worldX * 0.2f, worldZ * 0.2f) * 5f;
-
-                float turbulence = Mathf.PerlinNoise((worldX + 100) * 0.1f, (worldZ + 100) * 0.1f) * 3f;
-
-                int height = Mathf.FloorToInt(baseHeight + detailNoise + turbulence + 20);
-
-                for (int y = 0; y < (int)height; y++)
+                for (int y = 0; y < chunkHeight; y++)
                 {
-                    result[x, y, z] = BlockType.Dirt;
+                    if (y >= height -4 && y < height)
+                        blocks[x, y, z] = BlockType.Dirt;
+                    if (y == height)
+                        blocks[x, y, z] = BlockType.Grass;
+                    if (y < height - 4)
+                        blocks[x, y, z] = BlockType.Stone;
+                    if (y > height)
+                        blocks[x, y, z] = BlockType.Air;
                 }
             }
         }
 
-        for (int x = 0; x < Chunk.ChunkWidth; x++)
-        {
-            for (int z = 0; z < Chunk.ChunkHeight; z++)
-            {
-                for (int y = 0; y < Chunk.ChunkDepth; y++)
-                {
-                    if (result[x, y + 1, z] == BlockType.Air)
-                    {
-                        result[x, y, z] = BlockType.Grass;
-                        break;
-                    }
-                }
-            }
-        }
-
-        return result;
+        return blocks;
     }
 }

@@ -9,6 +9,7 @@ public class ChunkMeshGenerator : IChunkMeshGenerator
     internal Mesh ChunkMesh;
 
     BlockVerticesAndTrianglesGenerator blockVerticiesAndTrianglesGenerator;
+    BlockUVGenerator blockUVGenerator;
     public ChunkMeshGenerator(BlockType[,,] blocks, Mesh ChunkMesh)
     {
         this.blocks = blocks;
@@ -18,6 +19,7 @@ public class ChunkMeshGenerator : IChunkMeshGenerator
     {
         List<Vector3> verticesList = ChunkMesh.vertices.ToList<Vector3>();
         List<int> trinaglesList = ChunkMesh.triangles.ToList<int>();
+        List<Vector2> uvList = ChunkMesh.uv.ToList<Vector2>();
 
         for (int x = 0; x < Chunk.ChunkWidth; x++)
         {
@@ -25,14 +27,17 @@ public class ChunkMeshGenerator : IChunkMeshGenerator
             {
                 for (int z = 0; z < Chunk.ChunkHeight; z++)
                 {
-                    blockVerticiesAndTrianglesGenerator = new BlockVerticesAndTrianglesGenerator(blocks, new Vector3(x, y, z));
+                    blockVerticiesAndTrianglesGenerator = new BlockVerticesAndTrianglesGenerator(blocks, new Vector3(x, y, z), verticesList, trinaglesList);
+                    blockUVGenerator = new BlockUVGenerator(blocks, new Vector3(x, y, z), uvList, blocks[x, y, z]);
 
-                    blockVerticiesAndTrianglesGenerator.GenerateVerticesAndTringles(verticesList, trinaglesList);
+                    blockVerticiesAndTrianglesGenerator.GenerateVerticesAndTringles();
+                    blockUVGenerator.AddUVToBlock();
                 }
             }
         }
 
         ChunkMesh.vertices = verticesList.ToArray();
+        ChunkMesh.uv = uvList.ToArray();
         ChunkMesh.triangles = trinaglesList.ToArray();
     }
 

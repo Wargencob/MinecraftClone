@@ -13,21 +13,15 @@ public class BlockVerticesAndTrianglesGenerator : IBlockVerticesAndTrianglesGene
     int verticiesCount;
 
     Block block;
-    public BlockVerticesAndTrianglesGenerator(BlockType[,,] blocks, Vector3 position)
-    {
-        this.blocks = blocks;
-        this.position = position;
-    }
-    public BlockVerticesAndTrianglesGenerator(Vector3 position)
-    {
-        this.position = position;
-    }
-
-    public void GenerateVerticesAndTringles(List<Vector3> vertices, List<int> triangles)
+    public BlockVerticesAndTrianglesGenerator(BlockType[,,] blocks, Vector3 position, List<Vector3> vertices, List<int> triangles)
     {
         this.vertices = vertices;
         this.triangles = triangles;
-
+        this.blocks = blocks;
+        this.position = position;
+    }
+    public void GenerateVerticesAndTringles()
+    {
         if (blocks[(int)position.x, (int)position.y, (int)position.z] == 0)
             return;
 
@@ -60,8 +54,6 @@ public class BlockVerticesAndTrianglesGenerator : IBlockVerticesAndTrianglesGene
         {
             GenerateFrontSide(position);
         }
-
-        //block = new Block(blocks[(int)position.x, (int)position.y, (int)position.z], mesh);
     }
 
     public Block GetBlock()
@@ -148,7 +140,7 @@ public class BlockVerticesAndTrianglesGenerator : IBlockVerticesAndTrianglesGene
 
     }
 
-    public bool IsGetTouch(BlockType[,,] blocks, Vector3 position)
+    public static bool IsGetTouch(BlockType[,,] blocks, Vector3 position)
     {
         if
         (
